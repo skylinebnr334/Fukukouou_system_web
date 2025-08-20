@@ -12,22 +12,12 @@ export default function useRound2_MultiData(){
                 miss_timing:-1
             },
             {team_id:1,
-                current_phase:0,
+                current_phase:2,
                 latest_down_num:-1,
                 miss_timing:-1
             },
             {team_id:2,
-                current_phase:0,
-                latest_down_num:-1,
-                miss_timing:-1
-            },
-            {team_id:3,
-                current_phase:0,
-                latest_down_num:-1,
-                miss_timing:-1
-            },
-            {team_id:4,
-                current_phase:0,
+                current_phase:5,
                 latest_down_num:-1,
                 miss_timing:-1
             }
