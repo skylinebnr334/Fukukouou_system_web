@@ -9,7 +9,7 @@ export default function useRound2_MultiData(){
             {team_id:0,
                 current_phase:0,
                 latest_down_num:-1,
-                miss_timing:-1
+                miss_timing:0
             },
             {team_id:1,
                 current_phase:2,
@@ -25,7 +25,7 @@ export default function useRound2_MultiData(){
         }
     );
     const getRound2_MultiData=()=>{
-
+        
     }
     return{getRound2_MultiData,Round2_MultiData};
 }

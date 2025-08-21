@@ -6,6 +6,7 @@ import { Grid } from '@mui/material';
 import { css, Global } from "@emotion/react";
 import { Global_Style } from '../styles/global_Style';
 import { Round2_Data_Naibu } from '../types/Round2_Data_Naibu';
+import useRound2_StgData from '../hooks/useRound2_StgData';
 
 const NORMAL = "#7e449d"
 const GRAY = "#444444"
@@ -34,19 +35,19 @@ const KaidanItem = (props: { i: number; Round1_MultiData: Round2_Data_Naibu }) =
                 css={css`
                     ${style.scoregaugeNakamiBase};
                     font-size: ${score < 1 ? "3.0vw" : "4.5vw"};
-                    height:${100-score*20}%;
+                    height:${score<0 ? 0 : 100-score*20}%;
                 `}
             />
             </div>
         </Grid>
     )
 }
-const PhaseItem = (props: { i: number; Round1_MultiData: Round2_Data_Naibu }) => {
+const PhaseItem = (props: { i: number; Round1_MultiData: Round2_Data_Naibu ,stage_no:number}) => {
     const score = props.Round1_MultiData.teams[props.i].current_phase;
 /*
     const color = score < 1 ? LOST : score === 1 ? REACH : NORMAL
     */
-   const color = NORMAL
+   const color=are_you_locked(props.stage_no,props.Round1_MultiData,props.i) ? LOST:NORMAL;
 
     return (
         <Grid size={4} css={style.scoreCenterWrapper}>
@@ -67,25 +68,95 @@ const PhaseItem = (props: { i: number; Round1_MultiData: Round2_Data_Naibu }) =>
         </Grid>
     )
 }
+const KaitoukenItem = (props: { i: number; Round1_MultiData: Round2_Data_Naibu ,stage_no:number}) => {
+    const score = props.Round1_MultiData.teams[props.i].current_phase;
+/*
+    const color = score < 1 ? LOST : score === 1 ? REACH : NORMAL
+    */
+   const color = "#FF0000"
+
+    return (
+        <Grid size={4} css={style.scoreCenterWrapper}>
+            {are_you_locked(props.stage_no,props.Round1_MultiData,props.i) ? 
+            <div
+                css={css`
+                    ${style.HoldWrapperBase};
+                    border: ${color ? color + " 4px solid" : "none"};
+                    color: ${color ? "white" : "none"};
+                    font-size: ${"1.5vw"};
+                `}
+            >
+                <p css={style.holdBase}>
+                    LOCKED
+                </p>
+            </div> : <></>
+}
+        </Grid>
+    )
+}
+const HoldstateItem = (props: { i: number; Round1_MultiData: Round2_Data_Naibu }) => {
+    const score = props.Round1_MultiData.teams[props.i].current_phase;
+/*
+    const color = score < 1 ? LOST : score === 1 ? REACH : NORMAL
+    */
+   const color = "#ff8c00"
+
+    return (
+        <Grid size={4} css={style.scoreCenterWrapper}>
+            <div
+                css={css`
+                    ${style.HoldWrapperBase};
+                    border: ${color ? color + " 4px solid" : "none"};
+                    color: ${color ? "white" : "none"};
+                    font-size: ${"1.5vw"};
+                `}
+            >
+                <p css={style.holdBase}>
+                    HOLD
+                </p>
+            </div>
+        </Grid>
+    )
+}
+function are_you_locked(stage_no:number,round2MultiData:Round2_Data_Naibu,team_id:number):boolean{
+    let phase_tm=round2MultiData.teams[team_id].current_phase;
+    let miss_phase=round2MultiData.teams[team_id].miss_timing;
+    if(phase_tm==0){
+        if(miss_phase!=-1){
+            if(miss_phase+1>=stage_no){
+                return true;
+            }
+        }
+    }
+    return false;
+}
 export default function Round2Page() {
 
     const [refreshed, setRefreshed] = useState<boolean>(false);
     const { getRound2_MultiData, Round2_MultiData } = useRound2_MultiData();
+    const {getRound2_StgData,Round2StageData}=useRound2_StgData();
     useEffect(()=>{
         getRound2_MultiData();
+        getRound2_StgData();
         setRefreshed(true);
     },[])
     return (
         
         <>
             <Global styles={Global_Style} />
+            <div style={{color:"#FFFFFF"}}>
+                Stage : {Round2StageData.current_num+1}
+            </div>
             <div css={style.wrapper}>
-                <div style={{height: 25}} />
+                <div style={{height: 15}} />
                 <div>
                     <Grid container >
                          {[...Array(3)].map((_, i) => <KaidanItem key={i} i={i} Round1_MultiData={Round2_MultiData} />)}
 
-                        {[...Array(3)].map((_, i) => <PhaseItem key={i} i={i} Round1_MultiData={Round2_MultiData} />)}
+                        {[...Array(3)].map((_, i) => <PhaseItem key={i} i={i} Round1_MultiData={Round2_MultiData} stage_no={Round2StageData.current_num} />)}
+                        {[...Array(3)].map((_, i) => <KaitoukenItem key={i} i={i} Round1_MultiData={Round2_MultiData} stage_no={Round2StageData.current_num}/>)}
+
+                        {[...Array(3)].map((_, i) => <HoldstateItem key={i} i={i} Round1_MultiData={Round2_MultiData} />)}
 
                     </Grid>
                 </div>
@@ -127,7 +198,7 @@ const style = {
     scoreWrapperBase: css`
         display: inline-block;
         aspect-ratio: 1 / 1;
-        width: 45%;
+        width: 25%;
         height: auto;
         background-color: #00000000;
         border-radius: 50%;
@@ -137,7 +208,23 @@ const style = {
         width:100%;
         background-color: #222222;
     `,
+    HoldWrapperBase: css`
+        display: inline-block;
+        aspect-ratio: 3 / 1;
+        width: 30%;
+        height: auto;
+        background-color: #00000000;
+        margin-bottom: 20px;
+    `,
     scoreBase: css`
+        width: 100%;
+        height: 100%;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center; 
+    `,
+    holdBase: css`
         width: 100%;
         height: 100%;
         text-align: center;
