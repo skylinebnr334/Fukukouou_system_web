@@ -97,7 +97,7 @@ export default function useRound1_MultiData() {
                                 score: team6_score
                             }
                         ];
-                        let used_Array2:Array<boolean>=[false,false,false,false,false,false,
+                        let used_Array2:Array<boolean>=[true,false,false,false,false,false,
                 false,false,false,false,false,false,
                 false,false,false,false,false,false,
                 false,false,false,false,false,false,

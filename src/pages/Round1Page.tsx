@@ -230,6 +230,22 @@ export default function Round1Page() {
             <div style={{color:"#FFFFFF"}}>
                 Stage : {Round1StageData.current_stage+1}
             </div>
+            <div 
+                css={css`
+                    ${style.CURRENTJANRUWRAPPER};
+                    border: none;
+                    color: ${"white"};
+                    font-size: ${"2.5vw"};
+                    }
+                `}>
+                    <div>
+                現在の問題ジャンル:   </div>
+                    <div css={css`
+
+                    `}>{
+                        question_list_base[Round1StageData.current_question]
+                    }</div>
+            </div>
             <div css={style.wrapper}>
                 <div style={{height: 10}} />
                 <div>
@@ -309,6 +325,15 @@ const style = {
         height: auto;
         background-color: #00000000;
         margin-bottom: 10px;
+    `,
+    CURRENTJANRUWRAPPER: css`
+        align-items: center; 
+        display: flex;
+        width: 40%;
+        height: auto;
+        background-color: #00000066;
+        margin-bottom: 10px;
+        justify-content:space-between;
     `,
     scoreBase: css`
         width: 100%;
