@@ -95,12 +95,13 @@ const KaitoukenItem = (props: { i: number; Round1_MultiData: Round2_Data_Naibu ,
         </Grid>
     )
 }
-const HoldstateItem = (props: { i: number; Round1_MultiData: Round2_Data_Naibu }) => {
+const HoldstateItem = (props: { i: number; Round1_MultiData: Round2_Data_Naibu ,stage_no:number }) => {
     const score = props.Round1_MultiData.teams[props.i].current_phase;
 /*
     const color = score < 1 ? LOST : score === 1 ? REACH : NORMAL
     */
    const color = "#ff8c00"
+   const hold_flag=are_you_holded(props.stage_no,props.Round1_MultiData,props.i);
 
     return (
         <Grid size={4} css={style.scoreCenterWrapper}>
@@ -113,7 +114,7 @@ const HoldstateItem = (props: { i: number; Round1_MultiData: Round2_Data_Naibu }
                 `}
             >
                 <p css={style.holdBase}>
-                    HOLD
+                    {hold_flag? <>HOLD</> : <></>}
                 </p>
             </div>
         </Grid>
@@ -125,6 +126,20 @@ function are_you_locked(stage_no:number,round2MultiData:Round2_Data_Naibu,team_i
     if(phase_tm==0){
         if(miss_phase!=-1){
             if(miss_phase+1>=stage_no){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+function are_you_holded(stage_no:number,round2MultiData:Round2_Data_Naibu,team_id:number):boolean{
+    let phase_tm=round2MultiData.teams[team_id].current_phase;
+    let hold_P=round2MultiData.teams[team_id].latest_down_num;
+    if(phase_tm<2){
+                return true;
+    }else{
+        if(hold_P!=-1){
+            if(hold_P+1>=stage_no){
                 return true;
             }
         }
@@ -173,7 +188,7 @@ export default function Round2Page() {
                         {[...Array(3)].map((_, i) => <PhaseItem key={i} i={i} Round1_MultiData={Round2_MultiData} stage_no={Round2StageData.current_num} />)}
                         {[...Array(3)].map((_, i) => <KaitoukenItem key={i} i={i} Round1_MultiData={Round2_MultiData} stage_no={Round2StageData.current_num}/>)}
 
-                        {[...Array(3)].map((_, i) => <HoldstateItem key={i} i={i} Round1_MultiData={Round2_MultiData} />)}
+                        {[...Array(3)].map((_, i) => <HoldstateItem key={i} i={i} Round1_MultiData={Round2_MultiData}  stage_no={Round2StageData.current_num}/>)}
 
                     </Grid>
                 </div>
