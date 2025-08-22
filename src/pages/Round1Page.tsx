@@ -1,5 +1,5 @@
 /** @jsxImportSource @emotion/react */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import useRound2_MultiData from '../hooks/useRound2_MultiData';
 
 import { Grid } from '@mui/material';
@@ -10,6 +10,7 @@ import useRound2_StgData from '../hooks/useRound2_StgData';
 import useRound1_StgData from '../hooks/useRound1_StgData';
 import useRound1_MultiData from '../hooks/useRound1_MultiData';
 import { Round1_Data_Naibu } from '../types/Round1_Data_Naibu';
+import ReconnectingWebSocket from 'reconnecting-websocket'
 
 const NORMAL = "#7e449d"
 const GRAY = "#444444"
@@ -120,26 +121,66 @@ const HoldstateItem = (props: { i: number; Round1_MultiData: Round2_Data_Naibu }
         </Grid>
     )
 }
-const NumberQuestionstateItem = (props: { i: number}) => {
+const question_list_base:Array<string>=[
+    "福島①",
+    "福島②",
+    "福島③",
+    "文学",
+"古典",
+"漢字",
+"言語",
+"英語",
+"数学",
+"物理",
+"化学",
+"生物",
+"地学",
+"都道府県",
+"地理",
+"日本史",
+"世界史",
+"国",
+"公民",
+"生活",
+"音楽",
+"流行①",
+"流行②",
+"芸能",
+"テレビ",
+"アニメ",
+"ゲーム",
+"スポーツ",
+"ﾌｧｯｼｮﾝ",
+"美容",
+"映画",
+"動物",
+"料理",
+"果物",
+"ひらめき①",
+"ひらめき②",
+];
+const NumberQuestionstateItem = (props: { i: number,used_flag:boolean}) => {
     //const score = props.Round1_MultiData.teams[props.i].current_phase;
 /*
     const color = score < 1 ? LOST : score === 1 ? REACH : NORMAL
     */
-   const color = "#7e449d"
-
+   const color = props.used_flag?"#FF0000":"#7e449d"
     return (
         <Grid size={2} css={style.scoreCenterWrapper}>
             <div
                 css={css`
                     ${style.NumberPreviewWrapperBase};
                     border: ${color ? color + " 4px solid" : "none"};
-                    color: ${color ? "white" : "none"};
+                    color: ${props.used_flag ?"red":"white"};
                     font-size: ${"2.5vw"};
+                    }
                 `}
             >
+                {props.used_flag?"USED":
                 <p css={style.holdBase}>
-                    {props.i+1}
-                </p>
+                    {question_list_base[props.i]}
+                </p>}
+                
             </div>
         </Grid>
     )
@@ -159,12 +200,28 @@ function are_you_locked(stage_no:number,round2MultiData:Round2_Data_Naibu,team_i
 export default function Round1Page() {
 
     const [refreshed, setRefreshed] = useState<boolean>(false);
+    
+    const socketRef = useRef<ReconnectingWebSocket>(null);
     const { getRound1_MultiData, Round1_MultiData } = useRound1_MultiData();
     const {getRound1_StgData,Round1StageData}=useRound1_StgData();
     useEffect(()=>{
+        const websocket = new ReconnectingWebSocket('ws://localhost:8080/Server1/round1_ws');
+        socketRef.current = websocket;
         getRound1_MultiData();
         getRound1_StgData();
         setRefreshed(true);
+        const onMessage = (event: MessageEvent<string>) => {
+            if (event.data.startsWith("refresh")) {
+                //setTokutenvisible(false);
+                getRound1_MultiData();
+                //setTokutenvisible(true);
+            }
+        }
+        websocket.addEventListener('message', onMessage);
+        return () => {
+            websocket.close();
+            websocket.removeEventListener('message', onMessage);
+        }
     },[])
     return (
         
@@ -178,7 +235,7 @@ export default function Round1Page() {
                 <div>
                     <Grid container >
                          {[...Array(36)].map((_, i) =>
-                            <NumberQuestionstateItem i={i}/> )}
+                            <NumberQuestionstateItem i={i} used_flag={Round1_MultiData.used_questions[i]}/> )}
                                             {[...Array(6)].map((_, i) => <PhaseItem key={i} i={i} Round1_MultiData={Round1_MultiData} stage_no={Round1StageData.current_stage} />)}
 
 
