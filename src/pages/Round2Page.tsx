@@ -1,5 +1,5 @@
 /** @jsxImportSource @emotion/react */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import useRound2_MultiData from '../hooks/useRound2_MultiData';
 
 import { Grid } from '@mui/material';
@@ -7,6 +7,7 @@ import { css, Global } from "@emotion/react";
 import { Global_Style } from '../styles/global_Style';
 import { Round2_Data_Naibu } from '../types/Round2_Data_Naibu';
 import useRound2_StgData from '../hooks/useRound2_StgData';
+import ReconnectingWebSocket from 'reconnecting-websocket';
 
 const NORMAL = "#7e449d"
 const GRAY = "#444444"
@@ -133,12 +134,28 @@ function are_you_locked(stage_no:number,round2MultiData:Round2_Data_Naibu,team_i
 export default function Round2Page() {
 
     const [refreshed, setRefreshed] = useState<boolean>(false);
+        const socketRef = useRef<ReconnectingWebSocket>(null);
     const { getRound2_MultiData, Round2_MultiData } = useRound2_MultiData();
     const {getRound2_StgData,Round2StageData}=useRound2_StgData();
     useEffect(()=>{
+            const websocket = new ReconnectingWebSocket('ws://localhost:8080/Server2/round2_ws');
+            socketRef.current = websocket;
         getRound2_MultiData();
         getRound2_StgData();
         setRefreshed(true);
+        const onMessage = (event: MessageEvent<string>) => {
+            if (event.data.startsWith("refresh")) {
+                //setTokutenvisible(false);
+                getRound2_MultiData();
+                getRound2_StgData();
+                //setTokutenvisible(true);
+            }
+        }
+        websocket.addEventListener('message', onMessage);
+        return () => {
+            websocket.close();
+            websocket.removeEventListener('message', onMessage);
+        }
     },[])
     return (
         
